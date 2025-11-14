@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: core-domain-configuration
+    version: 1.0.0
+    description: Configuration Service - Domain Layer
+    team:
+      name: Firefly Software Solutions Inc
+      email: dev@getfirefly.io
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:https://app-firefly-config-server.dev.soon.es/}"
