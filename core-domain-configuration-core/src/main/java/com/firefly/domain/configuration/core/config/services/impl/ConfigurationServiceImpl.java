@@ -1,12 +1,12 @@
 package com.firefly.domain.configuration.core.config.services.impl;
 
-import com.firefly.common.cqrs.query.QueryBus;
+import org.fireflyframework.cqrs.query.QueryBus;
 import com.firefly.common.reference.master.data.sdk.model.CountryDTO;
 import com.firefly.common.reference.master.data.sdk.model.CurrencyDTO;
 import com.firefly.common.reference.master.data.sdk.model.LegalFormDTO;
 import com.firefly.domain.configuration.core.config.queries.CountryQuery;
 import com.firefly.domain.configuration.core.config.queries.CurrencyQuery;
-import com.firefly.domain.configuration.core.config.queries.InitConfigResponse;
+import com.firefly.domain.configuration.interfaces.rest.InitConfigResponse;
 import com.firefly.domain.configuration.core.config.queries.LegalFormQuery;
 import com.firefly.domain.configuration.core.config.services.ConfigurationService;
 import org.springframework.beans.factory.annotation.Autowired;

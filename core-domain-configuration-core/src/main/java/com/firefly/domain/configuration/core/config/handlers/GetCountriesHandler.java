@@ -1,7 +1,7 @@
 package com.firefly.domain.configuration.core.config.handlers;
 
-import com.firefly.common.cqrs.annotations.QueryHandlerComponent;
-import com.firefly.common.cqrs.query.QueryHandler;
+import org.fireflyframework.cqrs.annotations.QueryHandlerComponent;
+import org.fireflyframework.cqrs.query.QueryHandler;
 import com.firefly.common.reference.master.data.sdk.api.CountriesApi;
 import com.firefly.common.reference.master.data.sdk.model.CountryDTO;
 import com.firefly.common.reference.master.data.sdk.model.FilterRequestCountryDTO;

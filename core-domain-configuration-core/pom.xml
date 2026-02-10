@@ -12,8 +12,6 @@
     <artifactId>core-domain-configuration-core</artifactId>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -33,15 +31,23 @@
 
         <!-- Common Libraries -->
         <dependency>
-            <groupId>com.firefly</groupId>
-            <artifactId>lib-utils</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-utils</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.firefly</groupId>
-            <artifactId>lib-common-domain</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-domain</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-cqrs</artifactId>
         </dependency>
 
         <!-- Spring WebFlux -->

@@ -12,12 +12,20 @@
     <artifactId>core-domain-configuration-web</artifactId>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-domain</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-data</artifactId>
+        </dependency>
+
         <!-- Internal modules -->
         <dependency>
             <groupId>com.firefly</groupId>
@@ -26,9 +34,8 @@
 
         <!-- Common Libraries -->
         <dependency>
-            <groupId>com.firefly</groupId>
-            <artifactId>lib-common-web</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.fireflyframework</groupId>
+            <artifactId>fireflyframework-web</artifactId>
         </dependency>
 
         <!-- Spring Boot -->
@@ -85,6 +92,10 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.firefly</groupId>
+            <artifactId>core-domain-configuration-core</artifactId>
         </dependency>
     </dependencies>
 

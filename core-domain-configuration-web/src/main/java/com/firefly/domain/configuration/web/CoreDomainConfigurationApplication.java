@@ -1,6 +1,6 @@
 package com.firefly.domain.configuration.web;
 
-import com.firefly.transactional.shared.annotations.EnableTransactionalEngine;
+import org.fireflyframework.transactional.shared.annotations.EnableTransactionalEngine;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -13,7 +13,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @SpringBootApplication(
         scanBasePackages = {
                 "com.firefly.domain.configuration",
-                "com.firefly.common.web"  // Scan common web library configurations
+                "org.fireflyframework.web"  // Scan common web library configurations
         }
 )
 @EnableWebFlux
