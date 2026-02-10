@@ -1,4 +1,4 @@
-Basado en el `curl` proporcionado y la estructura definida en la guía de `lib-common-data`, aquí tienes el ejemplo completo de implementación para un enricher de **Orbis (Bureau van Dijk)**.
+Basado en el `curl` proporcionado y la estructura definida en la guía de [`fireflyframework-data`](https://github.com/fireflyframework/fireflyframework-data), aquí tienes el ejemplo completo de implementación para un enricher de **Orbis (Bureau van Dijk)**.
 
 ### 1. Modelos de Datos (Client Module)
 
@@ -54,7 +54,7 @@ public class OrbisResponse {
 
 ### 2. Cliente API (Client Module)
 
-Implementamos el cliente utilizando `RestClient` de `lib-common-client`.
+Implementamos el cliente utilizando `RestClient` de [`fireflyframework-client`](https://github.com/fireflyframework/fireflyframework-client).
 
 #### OrbisClient.java
 ```java
