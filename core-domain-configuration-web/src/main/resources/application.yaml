@@ -8,3 +8,34 @@ spring:
       email: dev@getfirefly.io
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL:https://app-firefly-config-server.dev.soon.es/}"
+
+firefly:
+  service-client:
+    enabled: true
+    rest:
+      max-connections: 200
+      response-timeout: 30s
+      connect-timeout: 10s
+      read-timeout: 30s
+      compression-enabled: true
+      follow-redirects: true
+      max-in-memory-size: 2097152 # 2MB
+      default-content-type: application/json
+      default-accept-type: application/json
+  data:
+    enrichment:
+      enabled: true
+      discovery:
+        enabled: true
+
+orbis:
+  base-url: https://api.bvdinfo.com
+  api-token: 2PZ408d1c4a2cc324b499edb150ac7f679a6
+
+equifax:
+  base-url: https://api.sandbox.equifax.com
+  username: AAuTQ3F6ugYhALOQ1twen62cRO5EAUe8
+  password: UhAtQnuyx9PGRr2E
+server:
+  port: 8088
+

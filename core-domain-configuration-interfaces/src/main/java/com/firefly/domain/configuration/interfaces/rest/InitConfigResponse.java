@@ -1,4 +1,4 @@
-package com.firefly.domain.configuration.core.config.rest;
+package com.firefly.domain.configuration.interfaces.rest;
 
 import com.firefly.common.reference.master.data.sdk.model.CountryDTO;
 import com.firefly.common.reference.master.data.sdk.model.CurrencyDTO;
