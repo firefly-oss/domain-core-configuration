@@ -25,7 +25,7 @@
         <!-- SDKs -->
         <dependency>
             <groupId>com.firefly</groupId>
-            <artifactId>common-platform-reference-master-data-sdk</artifactId>
+            <artifactId>core-common-reference-master-data-sdk</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
