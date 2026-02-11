@@ -26,7 +26,6 @@
         <dependency>
             <groupId>com.firefly</groupId>
             <artifactId>core-common-reference-master-data-sdk</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Common Libraries -->
