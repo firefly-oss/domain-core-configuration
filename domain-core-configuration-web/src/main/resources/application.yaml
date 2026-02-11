@@ -1,6 +1,6 @@
 spring:
   application:
-    name: core-domain-configuration
+    name: domain-core-configuration
     version: 1.0.0
     description: Configuration Service - Domain Layer
     team:

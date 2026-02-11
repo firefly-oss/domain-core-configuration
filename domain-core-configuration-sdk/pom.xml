@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.firefly</groupId>
-    <artifactId>core-domain-configuration-sdk</artifactId>
+    <artifactId>domain-core-configuration-sdk</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>

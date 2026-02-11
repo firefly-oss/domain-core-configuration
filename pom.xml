@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.firefly</groupId>
-    <artifactId>core-domain-configuration</artifactId>
+    <artifactId>domain-core-configuration</artifactId>
     <packaging>pom</packaging>
 
     <properties>
@@ -22,11 +22,11 @@
         <fireflyframework.bom.version>26.01.01</fireflyframework.bom.version>
     </properties>
     <modules>
-        <module>core-domain-configuration-core</module>
-        <module>core-domain-configuration-interfaces</module>
-        <module>core-domain-configuration-web</module>
-        <module>core-domain-configuration-sdk</module>
-        <module>core-domain-configuration-infra</module>
+        <module>domain-core-configuration-core</module>
+        <module>domain-core-configuration-interfaces</module>
+        <module>domain-core-configuration-web</module>
+        <module>domain-core-configuration-sdk</module>
+        <module>domain-core-configuration-infra</module>
     </modules>
 
     <dependencyManagement>
@@ -41,27 +41,27 @@
             <!-- Internal modules -->
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>core-domain-configuration-core</artifactId>
+                <artifactId>domain-core-configuration-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>core-domain-configuration-interfaces</artifactId>
+                <artifactId>domain-core-configuration-interfaces</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>core-domain-configuration-web</artifactId>
+                <artifactId>domain-core-configuration-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>core-domain-configuration-sdk</artifactId>
+                <artifactId>domain-core-configuration-sdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.firefly</groupId>
-                <artifactId>core-domain-configuration-infra</artifactId>
+                <artifactId>domain-core-configuration-infra</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

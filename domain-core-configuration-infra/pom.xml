@@ -5,28 +5,20 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.firefly</groupId>
-        <artifactId>core-domain-configuration</artifactId>
+        <artifactId>domain-core-configuration</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>core-domain-configuration-core</artifactId>
+    <artifactId>domain-core-configuration-infra</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
-        <!-- Internal modules -->
         <dependency>
             <groupId>com.firefly</groupId>
-            <artifactId>core-domain-configuration-infra</artifactId>
-        </dependency>
-
-        <!-- SDKs -->
-        <dependency>
-            <groupId>com.firefly</groupId>
-            <artifactId>common-platform-reference-master-data-sdk</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <artifactId>domain-core-configuration-interfaces</artifactId>
         </dependency>
 
         <!-- Common Libraries -->
@@ -37,23 +29,30 @@
 
         <dependency>
             <groupId>org.fireflyframework</groupId>
-            <artifactId>fireflyframework-domain</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.fireflyframework</groupId>
             <artifactId>fireflyframework-client</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.fireflyframework</groupId>
-            <artifactId>fireflyframework-cqrs</artifactId>
+            <artifactId>fireflyframework-data</artifactId>
         </dependency>
 
         <!-- Spring WebFlux -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- OpenAPI -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
         </dependency>
 
         <!-- Mapping -->
@@ -69,15 +68,26 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Testing -->
+        <!-- Jackson -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.firefly</groupId>
+            <artifactId>common-platform-reference-master-data-sdk</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -107,8 +117,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
-
 </project>

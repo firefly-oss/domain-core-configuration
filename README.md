@@ -1,1 +1,1 @@
-# core-domain-configuration
+# domain-core-configuration
