@@ -64,15 +64,6 @@ firefly:
   stepevents:
     enabled: true
 
-orbis:
-  base-url: https://api.bvdinfo.com
-  api-token: 2PZ408d1c4a2cc324b499edb150ac7f679a6
-
-equifax:
-  base-url: https://api.sandbox.equifax.com
-  username: AAuTQ3F6ugYhALOQ1twen62cRO5EAUe8
-  password: UhAtQnuyx9PGRr2E
-
 server:
   address: ${SERVER_ADDRESS:localhost}
   port: ${SERVER_PORT:8088}
