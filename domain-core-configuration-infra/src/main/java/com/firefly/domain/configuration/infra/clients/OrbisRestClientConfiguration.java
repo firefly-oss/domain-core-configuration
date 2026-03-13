@@ -15,7 +15,7 @@ public class OrbisRestClientConfiguration {
     public RestClient orbisRestClient(WebClient.Builder webClientBuilder,
                                       CircuitBreakerManager circuitBreakerManager,
                                       @Value("${orbis.base-url:https://api.bvdinfo.com}") String baseUrl,
-                                      @Value("${orbis.api-token}") String apiToken) {
+                                      @Value("${orbis.api-token:}") String apiToken) {
 
         WebClient webClient = webClientBuilder
                 .baseUrl(baseUrl)

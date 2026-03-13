@@ -11,7 +11,6 @@ import com.firefly.domain.configuration.core.config.queries.CurrencyQuery;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.UUID;
 
 @QueryHandlerComponent
 public class GetCurrenciesHandler extends QueryHandler<CurrencyQuery, List<CurrencyDTO>> {
@@ -29,7 +28,7 @@ public class GetCurrenciesHandler extends QueryHandler<CurrencyQuery, List<Curre
         pagination.setPageNumber(0);
         pagination.setPageSize(100);
         filter.setPagination(pagination);
-        return currenciesApi.filterCurrencies(filter, UUID.randomUUID().toString())
+        return currenciesApi.filterCurrencies(filter)
                 .mapNotNull(PaginationResponseCurrencyDTO::getContent);
     }
 }

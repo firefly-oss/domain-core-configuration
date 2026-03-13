@@ -11,7 +11,6 @@ import com.firefly.domain.configuration.core.config.queries.LegalFormQuery;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.UUID;
 
 @QueryHandlerComponent
 public class GetLegalFormsHandler extends QueryHandler<LegalFormQuery, List<LegalFormDTO>> {
@@ -29,7 +28,7 @@ public class GetLegalFormsHandler extends QueryHandler<LegalFormQuery, List<Lega
         pagination.setPageNumber(0);
         pagination.setPageSize(100);
         filter.setPagination(pagination);
-        return legalFormsApi.listLegalForms(filter, UUID.randomUUID().toString())
+        return legalFormsApi.listLegalForms(filter)
                 .mapNotNull(PaginationResponseLegalFormDTO::getContent);
     }
 }

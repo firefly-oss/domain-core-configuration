@@ -22,8 +22,8 @@ public class EquifaxService {
     private final String password;
 
     public EquifaxService(RestClient equifaxRestClient,
-                          @Value("${equifax.username}") String username,
-                          @Value("${equifax.password}") String password) {
+                          @Value("${equifax.username:}") String username,
+                          @Value("${equifax.password:}") String password) {
         this.equifaxRestClient = equifaxRestClient;
         this.username = username;
         this.password = password;
