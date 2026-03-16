@@ -11,6 +11,7 @@ import com.firefly.domain.configuration.core.config.queries.CountryQuery;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.UUID;
 
 @QueryHandlerComponent
 public class GetCountriesHandler extends QueryHandler<CountryQuery, List<CountryDTO>> {
@@ -28,7 +29,7 @@ public class GetCountriesHandler extends QueryHandler<CountryQuery, List<Country
         pagination.setPageNumber(0);
         pagination.setPageSize(100);
         filter.setPagination(pagination);
-        return countriesApi.filterCountries(filter)
+        return countriesApi.filterCountries(filter, UUID.randomUUID().toString())
                 .mapNotNull(PaginationResponseCountryDTO::getContent);
     }
 
