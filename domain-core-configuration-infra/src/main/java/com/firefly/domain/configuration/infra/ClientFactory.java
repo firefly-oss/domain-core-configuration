@@ -37,4 +37,14 @@ public class ClientFactory {
         return new LegalFormsApi(apiClient);
     }
 
+    @Bean
+    public LanguageLocaleApi languageLocaleApi() {
+        return new LanguageLocaleApi(apiClient);
+    }
+
+    @Bean
+    public LookupDomainsApi lookupDomainsApi() {
+        return new LookupDomainsApi(apiClient);
+    }
+
 }

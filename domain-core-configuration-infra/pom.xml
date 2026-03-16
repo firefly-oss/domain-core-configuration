@@ -82,6 +82,11 @@
             <artifactId>core-common-reference-master-data-sdk</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.firefly</groupId>
+            <artifactId>core-common-config-mgmt-sdk</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>

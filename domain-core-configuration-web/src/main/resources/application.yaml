@@ -73,6 +73,8 @@ server:
 api-configuration:
   common-platform.reference-master-data:
     base-path: ${endpoints.core.common-platform-reference-master-data}
+  core-common.config-mgmt:
+    base-path: ${ENDPOINT_CORE_CONFIG_MGMT:http://localhost:8080}
 
 springdoc:
   api-docs:
