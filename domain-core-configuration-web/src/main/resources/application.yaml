@@ -19,6 +19,7 @@ spring:
 endpoints:
   core:
     common-platform-reference-master-data: ${ENDPOINT_CORE_REFERENCE_MASTER_DATA:http://localhost:8080}
+    common-platform-product-mgmt: ${ENDPOINT_CORE_PRODUCT_MGMT:http://localhost:8081}
 
 firefly:
   service-client:
@@ -75,6 +76,8 @@ api-configuration:
     base-path: ${endpoints.core.common-platform-reference-master-data}
   core-common.config-mgmt:
     base-path: ${ENDPOINT_CORE_CONFIG_MGMT:http://localhost:8080}
+  core-common.product-mgmt:
+    base-path: ${endpoints.core.common-platform-product-mgmt}
 
 springdoc:
   api-docs:
