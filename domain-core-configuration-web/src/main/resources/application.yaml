@@ -36,6 +36,7 @@ firefly:
   data:
     enrichment:
       enabled: true
+      cache-enabled: true
       discovery:
         enabled: true
   cqrs:
