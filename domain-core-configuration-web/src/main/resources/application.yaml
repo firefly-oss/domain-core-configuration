@@ -106,14 +106,6 @@ management:
       enabled: true
     redis:
       enabled: false
-  tracing:
-    enabled: true
-    sampling:
-      probability: 1.0
-  otlp:
-    tracing:
-      endpoint: ${OTEL_ENDPOINT:http://otel-collector:4317}
-otel.traces.exporter: otlp
 
 logging:
   pattern:
