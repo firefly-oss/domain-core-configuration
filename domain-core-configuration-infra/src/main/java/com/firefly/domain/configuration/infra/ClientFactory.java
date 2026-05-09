@@ -47,4 +47,9 @@ public class ClientFactory {
         return new LookupDomainsApi(apiClient);
     }
 
+    @Bean
+    public LookupItemsApi lookupItemsApi() {
+        return new LookupItemsApi(apiClient);
+    }
+
 }
