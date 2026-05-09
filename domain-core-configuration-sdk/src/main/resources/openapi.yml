@@ -35,6 +35,35 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TenantBrandingDTO"
+  /api/v1/configuration/lookup-items:
+    get:
+      tags:
+      - Configuration Queries
+      summary: Get lookup items grouped by domain code
+      description: "Returns every lookup item available in the master-data catalogue,\
+        \ grouped by its parent domain code. Lets channel-management or any other\
+        \ experience tier project the items it needs into its own master-data DTO\
+        \ without re-implementing the lookup_domains + lookup_items join."
+      operationId: getMasterDataLookups
+      parameters:
+      - name: X-Idempotency-Key
+        in: header
+        description: "Unique key for idempotent requests. If provided, ensures that\
+          \ identical requests with the same key will only be processed once."
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/LookupItemDTO"
   /api/v1/configuration/lookup-domains:
     get:
       tags:
@@ -151,6 +180,50 @@ components:
         updatedAt:
           type: string
           format: date-time
+    LookupItemDTO:
+      required:
+      - domainId
+      - itemCode
+      - itemLabelDefault
+      - status
+      type: object
+      properties:
+        itemId:
+          type: string
+          format: uuid
+        domainId:
+          type: string
+          format: uuid
+        itemCode:
+          type: string
+        itemLabelDefault:
+          type: string
+        itemDesc:
+          type: string
+        parentItemId:
+          type: string
+          format: uuid
+        sortOrder:
+          type: integer
+          format: int32
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type: string
+          format: date
+        isCurrent:
+          type: boolean
+        extraJson:
+          type: string
+        tenantId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
     PaginationResponse:
       type: object
       properties:
