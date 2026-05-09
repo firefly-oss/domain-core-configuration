@@ -1,5 +1,6 @@
 package com.firefly.domain.configuration.core.config.handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firefly.common.reference.master.data.sdk.api.LookupDomainsApi;
 import com.firefly.common.reference.master.data.sdk.api.LookupItemsApi;
 import com.firefly.common.reference.master.data.sdk.model.LookupDomainDTO;
@@ -37,6 +38,7 @@ public class GetMasterDataLookupsHandler
 
     private final LookupDomainsApi lookupDomainsApi;
     private final LookupItemsApi lookupItemsApi;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected Mono<Map<String, List<LookupItemDTO>>> doHandle(MasterDataLookupsQuery query) {
@@ -51,9 +53,11 @@ public class GetMasterDataLookupsHandler
     }
 
     private Flux<LookupDomainDTO> extractDomains(Object pageResponse) {
-        // The SDK returns PaginationResponse with content as List<Object>.
-        // Convert via reflection-light cast to keep the handler decoupled
-        // from the generated PaginationResponse type structure.
+        // The SDK returns PaginationResponse with content as List<Object>; Jackson
+        // deserialises each entry as LinkedHashMap, so a direct cast to
+        // LookupDomainDTO would explode at runtime. Re-hydrate via ObjectMapper
+        // to keep the handler decoupled from the generated PaginationResponse
+        // type structure but type-safe at the element level.
         if (pageResponse == null) {
             return Flux.empty();
         }
@@ -63,7 +67,7 @@ public class GetMasterDataLookupsHandler
                 return Flux.empty();
             }
             return Flux.fromIterable(list)
-                    .map(LookupDomainDTO.class::cast);
+                    .map(item -> objectMapper.convertValue(item, LookupDomainDTO.class));
         } catch (ReflectiveOperationException ex) {
             return Flux.error(new IllegalStateException(
                     "Unable to read lookup_domains page content", ex));
