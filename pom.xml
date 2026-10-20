@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>domain-core-configuration</artifactId>
+    <name>domain-core-configuration</name>
     <packaging>pom</packaging>
 
     <properties>

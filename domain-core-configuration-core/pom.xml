@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>domain-core-configuration-core</artifactId>
+    <name>domain-core-configuration-core</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
