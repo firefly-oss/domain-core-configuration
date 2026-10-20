@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.firefly</groupId>
+        <groupId>io.fireflysoftware</groupId>
         <artifactId>domain-core-configuration</artifactId>
-        <version>26.10.2</version>
+        <version>26.10.3</version>
     </parent>
 
     <artifactId>domain-core-configuration-infra</artifactId>
@@ -17,7 +17,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.firefly</groupId>
+            <groupId>io.fireflysoftware</groupId>
             <artifactId>domain-core-configuration-interfaces</artifactId>
         </dependency>
 
@@ -78,12 +78,12 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.firefly</groupId>
+            <groupId>io.fireflysoftware</groupId>
             <artifactId>core-common-reference-master-data-sdk</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.firefly</groupId>
+            <groupId>io.fireflysoftware</groupId>
             <artifactId>core-common-config-mgmt-sdk</artifactId>
             <scope>compile</scope>
         </dependency>
