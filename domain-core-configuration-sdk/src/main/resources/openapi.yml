@@ -130,6 +130,57 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/InitConfigResponse"
+  /api/v1/environment-configs:
+    post:
+      tags:
+      - Environment Config
+      operationId: createConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnvironmentConfig"
+      responses:
+        "201":
+          description: Configuration stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvironmentConfig"
+  /api/v1/environment-configs/filter:
+    post:
+      tags:
+      - Environment Config
+      operationId: filterConfigs
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 200
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnvironmentConfigFilter"
+      responses:
+        "200":
+          description: Configuration page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvironmentConfigPage"
 components:
   schemas:
     TenantBrandingDTO:
@@ -352,3 +403,28 @@ components:
           enum:
           - ACTIVE
           - INACTIVE
+    EnvironmentConfig:
+      type: object
+      properties:
+        environmentName:
+          type: string
+        configKey:
+          type: string
+        configValue:
+          type: string
+        configType:
+          type: string
+        isSecret:
+          type: boolean
+        description:
+          type: string
+    EnvironmentConfigFilter:
+      type: object
+      additionalProperties: true
+    EnvironmentConfigPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnvironmentConfig"
