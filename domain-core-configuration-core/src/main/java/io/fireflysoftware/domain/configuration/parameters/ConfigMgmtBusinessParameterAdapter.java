@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Firefly Software Foundation
+ * Copyright 2026 Firefly Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,16 @@ package io.fireflysoftware.domain.configuration.parameters;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.web.reactive.function.client.WebClient;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.fireflysoftware.common.config.sdk.api.ConfigurationAuditsApi;
+import io.fireflysoftware.common.config.sdk.api.EnvironmentConfigurationsApi;
+import io.fireflysoftware.common.config.sdk.api.FeatureFlagsApi;
+import io.fireflysoftware.common.config.sdk.model.ConfigurationAuditDTO;
+import io.fireflysoftware.common.config.sdk.model.EnvironmentConfigDTO;
+import io.fireflysoftware.common.config.sdk.model.FeatureFlagDTO;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -34,25 +42,33 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Adapter an installer selects in place of {@link SandboxBusinessParameterAdapter}.
- * It calls core-common-config-mgmt and does not open a bank, a PSP, or an identity provider.
+ * Reads and writes business parameters through core-common-config-mgmt.
  */
 public final class ConfigMgmtBusinessParameterAdapter implements BusinessParameterPort {
 
-    static final String ENVIRONMENT_CONFIGS = "/api/v1/environment-configs";
-    static final String FEATURE_FLAGS = "/api/v1/feature-flags";
-    static final String AUDITS = "/api/v1/configuration-audits";
-
-    private final WebClient webClient;
+    private final EnvironmentConfigurationsApi environments;
+    private final FeatureFlagsApi flags;
+    private final ConfigurationAuditsApi audits;
     private final ObjectMapper mapper;
     private final String environmentName;
 
-    public ConfigMgmtBusinessParameterAdapter(WebClient webClient) {
-        this(webClient, new ObjectMapper(), "sandbox");
+    public ConfigMgmtBusinessParameterAdapter(EnvironmentConfigurationsApi environments,
+                                               FeatureFlagsApi flags,
+                                               ConfigurationAuditsApi audits,
+                                               String environmentName) {
+        this(environments, flags, audits, new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS), environmentName);
     }
 
-    ConfigMgmtBusinessParameterAdapter(WebClient webClient, ObjectMapper mapper, String environmentName) {
-        this.webClient = webClient;
+    ConfigMgmtBusinessParameterAdapter(EnvironmentConfigurationsApi environments,
+                                        FeatureFlagsApi flags,
+                                        ConfigurationAuditsApi audits,
+                                        ObjectMapper mapper,
+                                        String environmentName) {
+        this.environments = environments;
+        this.flags = flags;
+        this.audits = audits;
         this.mapper = mapper;
         this.environmentName = environmentName;
     }
@@ -61,24 +77,27 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
     public Mono<BusinessParameter> findByKey(String key) {
         ParameterRules.requireKey(key);
         String trimmed = key.trim();
-        return filter(ENVIRONMENT_CONFIGS, "configKey", trimmed)
-                .flatMap(rows -> rows.isEmpty() ? filter(FEATURE_FLAGS, "featureKey", trimmed) : Mono.just(rows))
+        return environmentRows()
+                .map(rows -> match(rows, "configKey", trimmed))
+                .flatMap(rows -> rows.isEmpty()
+                        ? flagRows().map(flags -> match(flags, "featureKey", trimmed))
+                        : Mono.just(rows))
                 .flatMap(rows -> rows.isEmpty() ? Mono.empty() : Mono.just(toParameter(rows.get(0))));
     }
 
     @Override
     public Flux<BusinessParameter> list() {
-        return filter(ENVIRONMENT_CONFIGS, null, null)
+        return environmentRows()
                 .flatMapMany(Flux::fromIterable)
                 .map(this::toParameter)
-                .concatWith(filter(FEATURE_FLAGS, null, null).flatMapMany(Flux::fromIterable).map(this::toParameter))
+                .concatWith(flagRows().flatMapMany(Flux::fromIterable).map(this::toParameter))
                 .sort(Comparator.comparing(BusinessParameter::key));
     }
 
     @Override
     public Mono<BusinessParameter> findById(UUID id) {
-        return read(ENVIRONMENT_CONFIGS, id)
-                .switchIfEmpty(read(FEATURE_FLAGS, id))
+        return readEnvironment(id)
+                .switchIfEmpty(Mono.defer(() -> readFlag(id)))
                 .map(this::toParameter);
     }
 
@@ -86,33 +105,35 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
     public Mono<BusinessParameter> create(BusinessParameter draft) {
         ParameterRules.requireWritable(draft);
         if (draft.kind() == ParameterKind.SWITCH) {
-            return post(FEATURE_FLAGS, featureFlagBody(draft, null)).map(this::toParameter);
+            return flags.createFeatureFlag(flag(featureFlagBody(draft)), key())
+                    .map(saved -> toParameter(mapper.valueToTree(saved)));
         }
-        return post(ENVIRONMENT_CONFIGS, environmentBody(draft, null)).map(this::toParameter);
+        return environments.createEnvironmentConfig(environment(environmentBody(draft)), key())
+                .map(saved -> toParameter(mapper.valueToTree(saved)));
     }
 
     @Override
     public Mono<BusinessParameter> update(UUID id, BusinessParameter draft) {
         ParameterRules.requireWritable(draft);
         return requireNode(id).flatMap(current -> {
-            String path = pathFor(current);
             ObjectNode body = (ObjectNode) current.deepCopy();
-            if (path.equals(FEATURE_FLAGS)) {
+            if (pathFor(current).equals("feature-flag")) {
                 body.put("featureKey", draft.key().trim());
                 body.put("featureName", draft.key().trim());
                 body.put("enabled", Boolean.parseBoolean(draft.value().trim()));
                 if (draft.description() != null) {
                     body.put("description", draft.description());
                 }
-            } else {
-                body.put("configKey", draft.key().trim());
-                body.put("configValue", draft.value().trim());
-                body.put("metadata", metadata(draft.kind()));
-                if (draft.description() != null) {
-                    body.put("description", draft.description());
-                }
+                return flags.updateFeatureFlag(id, flag(body), key()).map(saved -> toParameter(mapper.valueToTree(saved)));
             }
-            return put(path, id, body).map(this::toParameter);
+            body.put("configKey", draft.key().trim());
+            body.put("configValue", draft.value().trim());
+            body.put("metadata", metadata(draft.kind()));
+            if (draft.description() != null) {
+                body.put("description", draft.description());
+            }
+            return environments.updateEnvironmentConfig(id, environment(body), key())
+                    .map(saved -> toParameter(mapper.valueToTree(saved)));
         });
     }
 
@@ -123,126 +144,113 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
         }
         return requireNode(id).flatMap(current -> {
             BusinessParameter previous = toParameter(current);
-            String path = pathFor(current);
             ObjectNode body = (ObjectNode) current.deepCopy();
             body.put("active", status == ParameterStatus.ACTIVE);
-            return put(path, id, body)
-                    .flatMap(updated -> recordAudit(path, id, statusAction(status), "status",
-                            previous.status().name(), status.name()).thenReturn(toParameter(updated)));
+            Mono<JsonNode> updated = pathFor(current).equals("feature-flag")
+                    ? flags.updateFeatureFlag(id, flag(body), key()).map(saved -> (JsonNode) mapper.valueToTree(saved))
+                    : environments.updateEnvironmentConfig(id, environment(body), key()).map(saved -> (JsonNode) mapper.valueToTree(saved));
+            return updated.flatMap(node -> recordAudit(pathFor(current), id, statusAction(status), "status",
+                    previous.status().name(), status.name()).thenReturn(toParameter(node)));
         });
     }
 
     @Override
     public Mono<Void> remove(UUID id) {
         return requireNode(id).flatMap(current -> {
-            String path = pathFor(current);
             BusinessParameter previous = toParameter(current);
-            return webClient.delete()
-                    .uri(path + "/{id}", id)
-                    .retrieve()
-                    .toBodilessEntity()
-                    .then(recordAudit(path, id, "DELETE", "value", previous.value(), null));
+            String kind = pathFor(current);
+            Mono<Void> deleted = kind.equals("feature-flag")
+                    ? flags.deleteFeatureFlag(id, key())
+                    : environments.deleteEnvironmentConfig(id, key());
+            return deleted.then(recordAudit(kind, id, "DELETE", "value", previous.value(), null));
         });
     }
 
     @Override
     public Flux<ParameterHistoryEntry> history(UUID id) {
-        return filter(AUDITS, "entityId", id.toString())
-                .flatMapMany(Flux::fromIterable)
-                .map(this::toHistory);
+        return audits.filterConfigurationAudits(0, 500, null, null, null, null, key())
+                .flatMapMany(page -> Flux.fromIterable(page.getContent() == null
+                        ? List.<ConfigurationAuditDTO>of() : page.getContent()))
+                .filter(audit -> id.equals(audit.getEntityId()))
+                .map(audit -> toHistory(mapper.valueToTree(audit)));
     }
 
     private Mono<JsonNode> requireNode(UUID id) {
-        return read(ENVIRONMENT_CONFIGS, id)
-                .switchIfEmpty(read(FEATURE_FLAGS, id))
+        return readEnvironment(id)
+                .switchIfEmpty(Mono.defer(() -> readFlag(id)))
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Parameter was not found")));
     }
 
-    private Mono<List<JsonNode>> filter(String path, String field, String value) {
-        ObjectNode body = mapper.createObjectNode();
-        ObjectNode filters = body.putObject("filters");
-        if (field != null) {
-            filters.put(field, value);
-        }
-        ObjectNode pagination = body.putObject("pagination");
-        pagination.put("pageNumber", 0);
-        pagination.put("pageSize", 500);
-        return webClient.post()
-                .uri(path + "/filter")
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(String.class)
-                .map(this::readTree)
-                .map(this::content);
+    private Mono<List<JsonNode>> environmentRows() {
+        return environments.filterEnvironmentConfigs(0, 500, null, null, null, null, key())
+                .map(page -> nodes(page == null ? null : page.getContent()));
     }
 
-    private List<JsonNode> content(JsonNode page) {
-        JsonNode content = page.get("content");
-        if (content == null || !content.isArray()) {
+    private Mono<List<JsonNode>> flagRows() {
+        return flags.filterFeatureFlags(0, 500, null, null, null, null, key())
+                .map(page -> nodes(page == null ? null : page.getContent()));
+    }
+
+    private List<JsonNode> nodes(List<?> content) {
+        if (content == null) {
             return List.of();
         }
         List<JsonNode> rows = new ArrayList<>();
-        content.forEach(rows::add);
+        content.forEach(item -> rows.add(mapper.valueToTree(item)));
         return rows;
     }
 
-    private Mono<JsonNode> read(String path, UUID id) {
-        return webClient.get()
-                .uri(path + "/{id}", id)
-                .exchangeToMono(response -> {
-                    if (response.statusCode().value() == 404) {
-                        return response.releaseBody().then(Mono.empty());
-                    }
-                    if (response.statusCode().isError()) {
-                        return response.createException().flatMap(Mono::error);
-                    }
-                    return response.bodyToMono(String.class).map(this::readTree);
-                });
+    private static List<JsonNode> match(List<JsonNode> rows, String field, String value) {
+        return rows.stream().filter(row -> value.equals(row.path(field).asText())).toList();
     }
 
-    private Mono<JsonNode> post(String path, ObjectNode body) {
-        return webClient.post().uri(path).bodyValue(body).retrieve().bodyToMono(String.class).map(this::readTree);
+    private Mono<JsonNode> readEnvironment(UUID id) {
+        return environments.getEnvironmentConfigById(id, key())
+                .map(dto -> (JsonNode) mapper.valueToTree(dto))
+                .onErrorResume(ConfigMgmtBusinessParameterAdapter::missing, error -> Mono.empty());
     }
 
-    private Mono<JsonNode> put(String path, UUID id, ObjectNode body) {
-        return webClient.put().uri(path + "/{id}", id).bodyValue(body).retrieve().bodyToMono(String.class).map(this::readTree);
+    private Mono<JsonNode> readFlag(UUID id) {
+        return flags.getFeatureFlagById(id, key())
+                .map(dto -> (JsonNode) mapper.valueToTree(dto))
+                .onErrorResume(ConfigMgmtBusinessParameterAdapter::missing, error -> Mono.empty());
     }
 
-    private JsonNode readTree(String text) {
+    private EnvironmentConfigDTO environment(ObjectNode body) {
         try {
-            return mapper.readTree(text);
+            return mapper.treeToValue(body, EnvironmentConfigDTO.class);
         } catch (JsonProcessingException ex) {
-            throw new IllegalArgumentException("Configuration response was not JSON");
+            throw new IllegalArgumentException("Environment configuration could not be written");
         }
     }
 
-    private Mono<Void> recordAudit(
-            String path, UUID id, String action, String field, String oldValue, String newValue) {
-        ObjectNode audit = mapper.createObjectNode();
-        audit.put("entityType", path.equals(FEATURE_FLAGS) ? "FEATURE_FLAG" : "ENVIRONMENT_CONFIG");
-        audit.put("entityId", id.toString());
-        audit.put("action", action);
-        audit.put("fieldName", field);
-        if (oldValue != null) {
-            audit.put("oldValue", oldValue);
+    private FeatureFlagDTO flag(ObjectNode body) {
+        try {
+            return mapper.treeToValue(body, FeatureFlagDTO.class);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalArgumentException("Feature flag could not be written");
         }
-        if (newValue != null) {
-            audit.put("newValue", newValue);
-        }
-        audit.put("sourceSystem", "domain-core-configuration");
-        audit.put("changeCategory", "CONFIGURATION");
-        audit.put("changeSeverity", "LOW");
-        audit.put("impactScope", "GLOBAL");
-        audit.put("rollbackAvailable", true);
-        audit.put("rolledBack", false);
-        return webClient.post().uri(AUDITS).bodyValue(audit).retrieve().toBodilessEntity().then();
     }
 
-    private ObjectNode environmentBody(BusinessParameter draft, UUID id) {
+    private Mono<Void> recordAudit(String kind, UUID id, String action, String field, String oldValue, String newValue) {
+        ConfigurationAuditDTO audit = new ConfigurationAuditDTO();
+        audit.setEntityType(kind.equals("feature-flag") ? "FEATURE_FLAG" : "ENVIRONMENT_CONFIG");
+        audit.setEntityId(id);
+        audit.setAction(action);
+        audit.setFieldName(field);
+        audit.setOldValue(oldValue);
+        audit.setNewValue(newValue);
+        audit.setSourceSystem("domain-core-configuration");
+        audit.setChangeCategory("CONFIGURATION");
+        audit.setChangeSeverity("LOW");
+        audit.setImpactScope("GLOBAL");
+        audit.setRollbackAvailable(true);
+        audit.setRolledBack(false);
+        return audits.createConfigurationAudit(audit, key()).then();
+    }
+
+    private ObjectNode environmentBody(BusinessParameter draft) {
         ObjectNode body = mapper.createObjectNode();
-        if (id != null) {
-            body.put("id", id.toString());
-        }
         body.put("environmentName", environmentName);
         body.put("configKey", draft.key().trim());
         body.put("configValue", draft.value().trim());
@@ -257,11 +265,8 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
         return body;
     }
 
-    private ObjectNode featureFlagBody(BusinessParameter draft, UUID id) {
+    private ObjectNode featureFlagBody(BusinessParameter draft) {
         ObjectNode body = mapper.createObjectNode();
-        if (id != null) {
-            body.put("id", id.toString());
-        }
         body.put("featureKey", draft.key().trim());
         body.put("featureName", draft.key().trim());
         body.put("enabled", Boolean.parseBoolean(draft.value().trim()));
@@ -278,7 +283,7 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
     }
 
     private String pathFor(JsonNode node) {
-        return node.hasNonNull("featureKey") ? FEATURE_FLAGS : ENVIRONMENT_CONFIGS;
+        return node.hasNonNull("featureKey") ? "feature-flag" : "environment-config";
     }
 
     private BusinessParameter toParameter(JsonNode node) {
@@ -320,7 +325,6 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
     }
 
     private ParameterHistoryEntry toHistory(JsonNode node) {
-        Instant at = recordedAt(node);
         return new ParameterHistoryEntry(
                 uuid(node, "id"),
                 uuid(node, "entityId"),
@@ -328,7 +332,7 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
                 text(node, "fieldName"),
                 text(node, "oldValue"),
                 text(node, "newValue"),
-                at);
+                recordedAt(node));
     }
 
     private UUID uuid(JsonNode node, String field) {
@@ -357,5 +361,20 @@ public final class ConfigMgmtBusinessParameterAdapter implements BusinessParamet
 
     private String statusAction(ParameterStatus status) {
         return status == ParameterStatus.ACTIVE ? "ACTIVATE" : "DEACTIVATE";
+    }
+
+    private static String key() {
+        return UUID.randomUUID().toString();
+    }
+
+    private static boolean missing(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof WebClientResponseException http && http.getStatusCode().value() == 404) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }

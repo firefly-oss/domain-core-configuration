@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Firefly Software Foundation
+ * Copyright 2026 Firefly Software Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
 
 package io.fireflysoftware.domain.configuration.parameters;
 
+import io.fireflysoftware.common.config.sdk.api.ConfigurationAuditsApi;
+import io.fireflysoftware.common.config.sdk.api.EnvironmentConfigurationsApi;
+import io.fireflysoftware.common.config.sdk.api.FeatureFlagsApi;
+import io.fireflysoftware.common.config.sdk.invoker.ApiClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * Selects the sandbox adapter unless an installer sets the property to {@code core}.
@@ -44,9 +47,14 @@ public class BusinessParameterAdapterConfiguration {
             name = "adapter",
             havingValue = "core")
     public BusinessParameterPort configMgmtBusinessParameterPort(
-            @Value("${firefly.configuration.parameters.core-base-url:${ENDPOINT_CORE_CONFIG_MGMT:http://localhost:8080}}")
-            String baseUrl) {
-        WebClient client = WebClient.builder().baseUrl(baseUrl).build();
-        return new ConfigMgmtBusinessParameterAdapter(client);
+            @Value("${firefly.configuration.parameters.core-base-url:http://localhost:8080}") String baseUrl,
+            @Value("${firefly.configuration.parameters.environment-name:local}") String environmentName) {
+        ApiClient client = new ApiClient();
+        client.setBasePath(baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl);
+        return new ConfigMgmtBusinessParameterAdapter(
+                new EnvironmentConfigurationsApi(client),
+                new FeatureFlagsApi(client),
+                new ConfigurationAuditsApi(client),
+                environmentName);
     }
 }

@@ -16,7 +16,13 @@
 
 package io.fireflysoftware.domain.configuration.web.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.fireflysoftware.common.config.sdk.api.EnvironmentConfigurationsApi;
+import io.fireflysoftware.common.config.sdk.invoker.ApiClient;
+import io.fireflysoftware.common.config.sdk.model.EnvironmentConfigDTO;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,30 +30,37 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 /**
- * Environment configuration the domain SDK calls. The domain forwards each call to
- * core-common-config-mgmt and does not keep a second copy of the value.
+ * Environment configuration the domain SDK calls. Each call goes to core-common-config-mgmt.
  */
 @RestController
 @RequestMapping("/api/v1/environment-configs")
 public class EnvironmentConfigGatewayController {
 
-    private final WebClient core;
+    private final EnvironmentConfigurationsApi core;
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public EnvironmentConfigGatewayController(
             @Value("${firefly.configuration.parameters.core-base-url:http://localhost:8188}") String coreBaseUrl) {
-        this.core = WebClient.builder().baseUrl(trim(coreBaseUrl)).build();
+        ApiClient client = new ApiClient();
+        client.setBasePath(trim(coreBaseUrl));
+        this.core = new EnvironmentConfigurationsApi(client);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<String>> create(@RequestBody String body) {
-        return forward(core.post()
-                .uri("/api/v1/environment-configs")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(body));
+        EnvironmentConfigDTO request;
+        try {
+            request = mapper.readValue(body, EnvironmentConfigDTO.class);
+        } catch (Exception ex) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+        return core.createEnvironmentConfig(request, UUID.randomUUID().toString())
+                .map(created -> json(HttpStatus.CREATED, created));
     }
 
     @PostMapping(value = "/filter", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -55,21 +68,18 @@ public class EnvironmentConfigGatewayController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "200") int size,
             @RequestBody(required = false) String body) {
-        return forward(core.post()
-                .uri(uri -> uri.path("/api/v1/environment-configs/filter")
-                        .queryParam("page", page)
-                        .queryParam("size", size)
-                        .build())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(body == null || body.isBlank() ? "{}" : body));
+        return core.filterEnvironmentConfigs(page, size, null, null, null, null, UUID.randomUUID().toString())
+                .map(pageBody -> json(HttpStatus.OK, pageBody));
     }
 
-    private static Mono<ResponseEntity<String>> forward(WebClient.RequestHeadersSpec<?> request) {
-        return request.exchangeToMono(response -> response.bodyToMono(String.class)
-                .defaultIfEmpty("")
-                .map(payload -> ResponseEntity.status(response.statusCode())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(payload)));
+    private ResponseEntity<String> json(HttpStatus status, Object body) {
+        try {
+            return ResponseEntity.status(status)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(mapper.writeValueAsString(body));
+        } catch (Exception ex) {
+            throw new IllegalStateException("Configuration response could not be written");
+        }
     }
 
     private static String trim(String url) {
