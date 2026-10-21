@@ -38,13 +38,13 @@ class SandboxBusinessParameterAdapterTest {
         StepVerifier.create(adapter.findByKey(SandboxParameterKey.PAYMENTS_CLEARING_OUTBOUND_ACCOUNT_ID.key()))
                 .assertNext(parameter -> {
                     assertThat(parameter.kind()).isEqualTo(ParameterKind.ACCOUNT);
-                    assertThat(parameter.value()).isEqualTo("11111111-1111-4111-8111-111111111111");
+                    assertThat(parameter.value()).isEqualTo("44444444-4444-4444-8444-444444444441");
                 })
                 .verifyComplete();
 
         StepVerifier.create(adapter.findByKey(SandboxParameterKey.PAYMENTS_NOSTRO_ACCOUNT_ID.key()))
                 .assertNext(parameter -> assertThat(UUID.fromString(parameter.value()))
-                        .isEqualTo(UUID.fromString("33333333-3333-4333-8333-333333333333")))
+                        .isEqualTo(UUID.fromString("44444444-4444-4444-8444-444444444443")))
                 .verifyComplete();
 
         for (TransferRoute route : TransferRoute.values()) {
@@ -60,7 +60,7 @@ class SandboxBusinessParameterAdapterTest {
                 .assertNext(parameter -> assertThat(parameter.value()).isEqualTo(TransferRoute.OUTBOUND_RAIL.name()))
                 .verifyComplete();
         StepVerifier.create(adapter.findByKey(SandboxParameterKey.PAYMENTS_TRANSFER_TYPE_INTERNATIONAL_OUTBOUND_ROUTE.key()))
-                .assertNext(parameter -> assertThat(parameter.value()).isEqualTo(TransferRoute.OUTBOUND_PSP.name()))
+                .assertNext(parameter -> assertThat(parameter.value()).isEqualTo(TransferRoute.OUTBOUND_RAIL.name()))
                 .verifyComplete();
         StepVerifier.create(adapter.findByKey(SandboxParameterKey.JOURNEY_LENDING_MIN_CREDIT_SCORE.key()))
                 .assertNext(parameter -> assertThat(parameter.value()).isEqualTo("680"))

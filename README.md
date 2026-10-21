@@ -25,9 +25,9 @@ Reads are direct (`BusinessParameterQuery`). Writes run sagas: create compensate
 
 | Key | Value | Kind |
 | --- | --- | --- |
-| `payments.clearing.outbound.account-id` | `11111111-1111-4111-8111-111111111111` | ACCOUNT |
-| `payments.clearing.inbound.account-id` | `22222222-2222-4222-8222-222222222222` | ACCOUNT |
-| `payments.nostro.account-id` | `33333333-3333-4333-8333-333333333333` | ACCOUNT |
+| `payments.clearing.outbound.account-id` | `44444444-4444-4444-8444-444444444441` | ACCOUNT |
+| `payments.clearing.inbound.account-id` | `44444444-4444-4444-8444-444444444442` | ACCOUNT |
+| `payments.nostro.account-id` | `44444444-4444-4444-8444-444444444443` | ACCOUNT |
 | `payments.transfer-route.INTERNAL` | `INTERNAL` | ROUTE |
 | `payments.transfer-route.OUTBOUND_RAIL` | `OUTBOUND_RAIL` | ROUTE |
 | `payments.transfer-route.OUTBOUND_PSP` | `OUTBOUND_PSP` | ROUTE |
@@ -36,19 +36,19 @@ Reads are direct (`BusinessParameterQuery`). Writes run sagas: create compensate
 | `payments.transfer-type.INTERNAL.route` | `INTERNAL` | ROUTE |
 | `payments.transfer-type.DOMESTIC.outbound.route` | `OUTBOUND_RAIL` | ROUTE |
 | `payments.transfer-type.DOMESTIC.inbound.route` | `INBOUND_RAIL` | ROUTE |
-| `payments.transfer-type.INTERNATIONAL.outbound.route` | `OUTBOUND_PSP` | ROUTE |
-| `payments.transfer-type.INTERNATIONAL.inbound.route` | `INBOUND_PSP` | ROUTE |
+| `payments.transfer-type.INTERNATIONAL.outbound.route` | `OUTBOUND_RAIL` | ROUTE |
+| `payments.transfer-type.INTERNATIONAL.inbound.route` | `INBOUND_RAIL` | ROUTE |
 | `journey.lending.min-credit-score` | `680` | LIMIT |
 | `journey.cards.default-currency` | `EUR` | LIMIT |
 | `journey.cards.tenure-years` | `4` | LIMIT |
 
-Route values are the closed set `INTERNAL`, `OUTBOUND_RAIL`, `OUTBOUND_PSP`, `INBOUND_RAIL`, `INBOUND_PSP`. Call `findByKey` with the key. `journey.lending.min-credit-score` supplies the same number as the Jafly ruleset constant `MIN_CREDIT_SCORE`. The ruleset file stays the ruleset.
+Route values are the closed set `INTERNAL`, `OUTBOUND_RAIL`, `OUTBOUND_PSP`, `INBOUND_RAIL`, `INBOUND_PSP`. International credit transfers use the rail routes because library-rails exposes SWIFT. A PSP route is for an instrument library-psps supports, such as a card. Call `findByKey` with the key. `journey.lending.min-credit-score` supplies the same number as the Jafly ruleset constant `MIN_CREDIT_SCORE`. The ruleset file stays the ruleset.
 
 ### Ports for workers who own the other repositories
 
 Do not copy these values into those repositories. Call this port, and call `ReferenceCatalogPort` in `domain-core-reference-data` for shared catalogs (currencies, countries, transfer types, rail schemes, account space types, and product families).
 
-- `domain-payments` and `exp-payments`: `payments.clearing.outbound.account-id`, `payments.clearing.inbound.account-id`, `payments.nostro.account-id`, every `payments.transfer-route.*` key, and every `payments.transfer-type.*.route` key. Transfer type definitions, including which type is an internal book, which uses library-rails, and which uses library-psps, are catalog `TRANSFER_TYPE` on `ReferenceCatalogPort`.
+- `domain-payments` and `exp-payments`: `payments.clearing.outbound.account-id`, `payments.clearing.inbound.account-id`, `payments.nostro.account-id`, every `payments.transfer-route.*` key, and every `payments.transfer-type.*.route` key. Transfer type definitions, including which type is an internal book and which uses library-rails, are catalog `TRANSFER_TYPE` on `ReferenceCatalogPort`. A PSP route is for an instrument such as a card, not for an international credit transfer.
 - `exp-onboarding`, `exp-profile`, `exp-insurance`, `exp-lending`, `exp-finance-terminal`, and any other `exp-*` journey: `journey.lending.min-credit-score` for the decision threshold, and the reference catalogs for currencies and product families. Do not fold Jafly identity or the rules engine into this service.
 - `domain-banking-accounts`: catalog `ACCOUNT_SPACE_TYPE` lists `MAIN`, `SAVINGS`, `VACATION`, `EMERGENCY`, `GOALS`, and `CUSTOM`, the same codes as the accounts core. An internal transfer includes movement between those spaces. This service does not open or post accounts.
 - `domain-lending-loan-servicing`: this service is not a second loan master. The score threshold above is the origination decision parameter.

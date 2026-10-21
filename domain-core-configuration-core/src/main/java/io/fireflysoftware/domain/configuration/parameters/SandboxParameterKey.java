@@ -29,19 +29,19 @@ public enum SandboxParameterKey {
     PAYMENTS_CLEARING_OUTBOUND_ACCOUNT_ID(
             "a1111111-1111-4111-8111-111111111111",
             "payments.clearing.outbound.account-id",
-            "11111111-1111-4111-8111-111111111111",
+            "44444444-4444-4444-8444-444444444441",
             ParameterKind.ACCOUNT,
             "Outbound clearing account identifier. core-banking-ledger remains the book."),
     PAYMENTS_CLEARING_INBOUND_ACCOUNT_ID(
             "a2222222-2222-4222-8222-222222222222",
             "payments.clearing.inbound.account-id",
-            "22222222-2222-4222-8222-222222222222",
+            "44444444-4444-4444-8444-444444444442",
             ParameterKind.ACCOUNT,
             "Inbound clearing account identifier. core-banking-ledger remains the book."),
     PAYMENTS_NOSTRO_ACCOUNT_ID(
             "a3333333-3333-4333-8333-333333333333",
             "payments.nostro.account-id",
-            "33333333-3333-4333-8333-333333333333",
+            "44444444-4444-4444-8444-444444444443",
             ParameterKind.ACCOUNT,
             "Nostro account identifier. core-banking-ledger remains the book."),
     PAYMENTS_TRANSFER_ROUTE_INTERNAL(
@@ -95,15 +95,15 @@ public enum SandboxParameterKey {
     PAYMENTS_TRANSFER_TYPE_INTERNATIONAL_OUTBOUND_ROUTE(
             "a5555555-5555-4555-8555-555555555554",
             "payments.transfer-type.INTERNATIONAL.outbound.route",
-            TransferRoute.OUTBOUND_PSP.name(),
+            TransferRoute.OUTBOUND_RAIL.name(),
             ParameterKind.ROUTE,
-            "International outbound transfer type uses the outbound PSP route."),
+            "International outbound credit transfer uses the outbound rail route. library-rails exposes SWIFT."),
     PAYMENTS_TRANSFER_TYPE_INTERNATIONAL_INBOUND_ROUTE(
             "a5555555-5555-4555-8555-555555555555",
             "payments.transfer-type.INTERNATIONAL.inbound.route",
-            TransferRoute.INBOUND_PSP.name(),
+            TransferRoute.INBOUND_RAIL.name(),
             ParameterKind.ROUTE,
-            "International inbound transfer type uses the inbound PSP route."),
+            "International inbound credit transfer uses the inbound rail route. library-rails exposes SWIFT."),
     JOURNEY_LENDING_MIN_CREDIT_SCORE(
             "a6666666-6666-4666-8666-666666666661",
             "journey.lending.min-credit-score",
