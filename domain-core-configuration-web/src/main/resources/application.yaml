@@ -12,8 +12,9 @@ spring:
       enabled: true
 
   jackson:
-    serialization:
-      write-dates-as-timestamps: false
+    datatype:
+      datetime:
+        write-dates-as-timestamps: false
     time-zone: UTC
 
 endpoints:
