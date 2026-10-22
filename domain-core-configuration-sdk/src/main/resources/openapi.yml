@@ -10,6 +10,8 @@ tags:
   description: Query endpoints for configuration data
 - name: Configuration
   description: CQ queries for configuration
+- name: Business parameters
+  description: Journey limits, switches, account identifiers, and transfer routes
 paths:
   /api/v1/configuration/tenant-brandings:
     get:
@@ -181,6 +183,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EnvironmentConfigPage"
+  /api/v1/parameters/by-key/{key}:
+    get:
+      tags:
+      - Business parameters
+      summary: Read one business parameter by key
+      description: "Returns the business parameter stored for this key. The key is\
+        \ one path segment and may contain dots."
+      operationId: getBusinessParameterByKey
+      parameters:
+      - name: key
+        in: path
+        required: true
+        description: Business parameter key
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Business parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessParameter"
+        "404":
+          description: Parameter not found
 components:
   schemas:
     TenantBrandingDTO:
@@ -428,3 +454,27 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EnvironmentConfig"
+    BusinessParameter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        value:
+          type: string
+        kind:
+          type: string
+          enum:
+          - LIMIT
+          - SWITCH
+          - ACCOUNT
+          - ROUTE
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+        description:
+          type: string
